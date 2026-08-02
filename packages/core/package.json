@@ -1,0 +1,16 @@
+{
+  "name": "@governor/core",
+  "version": "0.0.0",
+  "description": "Deterministic runtime policy engine for MCP tools and AI agents.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "test": "vitest run"
+  },
+  "license": "MIT"
+}
