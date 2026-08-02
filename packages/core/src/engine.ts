@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { toolId } from "./context";
 import { allowDecision, denyDecision, escalateDecision, type GovernorDecision } from "./decisions";
 import type { GovernorPolicy } from "./policies";
@@ -25,12 +26,16 @@ export const createGovernor = (config: GovernorConfig): Governor => ({
         continue;
       }
 
+      if (policy.condition && !policy.condition(request)) {
+        continue;
+      }
+
       if (policy.action === "deny") {
         return denyDecision("policy_denied", policy.name);
       }
 
-      if (policy.require?.approval) {
-        return escalateDecision("approval_required", policy.name);
+      if (policy.action === "escalate" || policy.require?.approval) {
+        return escalateDecision("approval_required", policy.name, `esc_${randomUUID()}`);
       }
 
       if (policy.limit) {

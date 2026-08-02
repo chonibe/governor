@@ -6,6 +6,7 @@ export interface GovernorDecision {
   reason: string;
   policy?: string;
   retryAfter?: string;
+  escalationId?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -31,11 +32,13 @@ export const denyDecision = (
 export const escalateDecision = (
   reason: string,
   policy?: string,
+  escalationId?: string,
   metadata?: Record<string, unknown>
 ): GovernorDecision => ({
   allowed: false,
   action: "escalate",
   reason,
   policy,
+  escalationId,
   metadata
 });

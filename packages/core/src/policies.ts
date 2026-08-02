@@ -1,4 +1,4 @@
-import type { PolicyWindow, ToolRisk } from "./types";
+import type { AuthorizeRequest, DecisionAction, PolicyWindow, ToolRisk } from "./types";
 
 export interface PolicyMatch {
   tool?: string;
@@ -18,7 +18,8 @@ export interface RequireRule {
 export interface GovernorPolicy {
   name: string;
   match: PolicyMatch;
-  action?: "allow" | "deny";
+  action?: DecisionAction;
   limit?: LimitRule;
   require?: RequireRule;
+  condition?: (request: AuthorizeRequest) => boolean;
 }
