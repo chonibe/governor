@@ -85,6 +85,44 @@ if (decision.allowed) {
 }
 ```
 
+## Run The Server
+
+Governor includes a small HTTP server for systems that cannot embed `@governor/core` directly.
+
+```bash
+pnpm install
+pnpm --filter @governor/server build
+GOVERNOR_POLICY_FILE=./policies.json pnpm --filter @governor/server start
+```
+
+Example `policies.json`:
+
+```json
+{
+  "policies": [
+    {
+      "name": "block-destructive-github-tools",
+      "match": {
+        "tool": "github.delete_repo"
+      },
+      "action": "deny"
+    }
+  ]
+}
+```
+
+Authorize a tool call:
+
+```bash
+curl -X POST http://127.0.0.1:3000/v1/authorize \
+  -H 'content-type: application/json' \
+  -d '{
+    "actor": { "id": "agent_1", "type": "agent" },
+    "tool": { "server": "github", "name": "delete_repo", "risk": "critical" },
+    "context": { "tenantId": "acme", "environment": "production" }
+  }'
+```
+
 Example decision:
 
 ```ts
