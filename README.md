@@ -95,6 +95,15 @@ pnpm --filter @governor/server build
 GOVERNOR_POLICY_FILE=./policies.json pnpm --filter @governor/server start
 ```
 
+To persist decisions in Supabase, run [migrations/supabase/001_authorization.sql](migrations/supabase/001_authorization.sql), then start the server with:
+
+```bash
+SUPABASE_URL=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+GOVERNOR_POLICY_FILE=./policies.json \
+pnpm --filter @governor/server start
+```
+
 Example `policies.json`:
 
 ```json
@@ -109,6 +118,12 @@ Example `policies.json`:
     }
   ]
 }
+```
+
+List recorded decisions:
+
+```bash
+curl 'http://127.0.0.1:3000/v1/decisions?tenantId=acme'
 ```
 
 Authorize a tool call:

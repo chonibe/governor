@@ -1,4 +1,6 @@
+import { randomUUID } from "crypto";
 import type { Governor, AuthorizeRequest } from "@governor/core";
+import type { GovernorStorage } from "@governor/storage";
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -19,7 +21,8 @@ export const isAuthorizeRequest = (value: unknown): value is AuthorizeRequest =>
 
 export const handleAuthorize = async (
   governor: Governor,
-  request: unknown
+  request: unknown,
+  storage?: GovernorStorage
 ): Promise<{ status: number; body: unknown }> => {
   if (!isAuthorizeRequest(request)) {
     return {
@@ -32,8 +35,41 @@ export const handleAuthorize = async (
   }
 
   const decision = await governor.authorize(request);
+  const decisionId = `dec_${randomUUID()}`;
+
+  if (storage) {
+    await storage.recordDecision({
+      id: decisionId,
+      request,
+      decision,
+      createdAt: new Date().toISOString()
+    });
+  }
+
   return {
     status: 200,
-    body: decision
+    body: {
+      ...decision,
+      decisionId
+    }
+  };
+};
+
+export const handleDecisionList = async (
+  storage: GovernorStorage | undefined,
+  tenantId: string,
+  limit?: number
+): Promise<{ status: number; body: unknown }> => {
+  if (!storage?.listDecisions) {
+    return {
+      status: 501,
+      body: { error: "decision_storage_not_configured" }
+    };
+  }
+
+  const decisions = await storage.listDecisions({ tenantId, limit });
+  return {
+    status: 200,
+    body: { decisions }
   };
 };

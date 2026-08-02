@@ -1,3 +1,3 @@
 # Supabase Migrations
 
-The existing Supabase migrations will move here during extraction.
+Run `001_authorization.sql` to enable persistent decision recording, approval state, and atomic counters for the authorize-native Governor runtime.

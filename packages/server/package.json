@@ -17,6 +17,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@governor/core": "workspace:*"
+    "@governor/core": "workspace:*",
+    "@governor/storage": "workspace:*"
   }
 }

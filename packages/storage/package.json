@@ -13,6 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@governor/core": "workspace:*"
+    "@governor/core": "workspace:*",
+    "@supabase/supabase-js": "^2.49.1"
   }
 }

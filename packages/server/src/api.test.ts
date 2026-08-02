@@ -1,10 +1,13 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { createGovernor } from "@governor/core";
+import { MemoryGovernorStorage } from "@governor/storage";
 import { startGovernorServer } from "./api";
 
 describe("Governor HTTP server", () => {
+  const storage = new MemoryGovernorStorage();
   const started = startGovernorServer({
     port: 0,
+    storage,
     governor: createGovernor({
       policies: [
         {
@@ -48,7 +51,27 @@ describe("Governor HTTP server", () => {
     await expect(response.json()).resolves.toMatchObject({
       allowed: false,
       action: "deny",
-      policy: "block-github-delete"
+      policy: "block-github-delete",
+      decisionId: expect.stringMatching(/^dec_/)
+    });
+  });
+
+  it("lists persisted decisions", async () => {
+    const { url } = await started;
+    const response = await fetch(`${url}/v1/decisions?tenantId=acme`);
+
+    await expect(response.json()).resolves.toMatchObject({
+      decisions: [
+        {
+          id: expect.stringMatching(/^dec_/),
+          request: {
+            context: { tenantId: "acme" }
+          },
+          decision: {
+            policy: "block-github-delete"
+          }
+        }
+      ]
     });
   });
 

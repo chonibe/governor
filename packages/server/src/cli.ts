@@ -2,6 +2,7 @@
 
 import { readFile } from "fs/promises";
 import { createGovernor, type GovernorConfig } from "@governor/core";
+import { MemoryGovernorStorage, SupabaseGovernorStorage } from "@governor/storage";
 import { startGovernorServer } from "./api";
 
 const loadConfig = async (): Promise<GovernorConfig> => {
@@ -24,7 +25,13 @@ const main = async () => {
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
   const hostname = process.env.HOST ?? "127.0.0.1";
   const governor = createGovernor(config);
-  const { url } = await startGovernorServer({ governor, port, hostname });
+  const storage = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? new SupabaseGovernorStorage({
+        url: process.env.SUPABASE_URL,
+        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY
+      })
+    : new MemoryGovernorStorage();
+  const { url } = await startGovernorServer({ governor, port, hostname, storage });
 
   console.log(`Governor server listening on ${url}`);
 };

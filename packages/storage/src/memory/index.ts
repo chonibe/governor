@@ -1,4 +1,4 @@
-import type { DecisionRecord, GovernorStorage } from "../interface";
+import type { DecisionListOptions, DecisionRecord, GovernorStorage } from "../interface";
 
 export class MemoryGovernorStorage implements GovernorStorage {
   private decisions: DecisionRecord[] = [];
@@ -7,7 +7,10 @@ export class MemoryGovernorStorage implements GovernorStorage {
     this.decisions.push(record);
   }
 
-  listDecisions(): DecisionRecord[] {
-    return [...this.decisions];
+  async listDecisions(options: DecisionListOptions): Promise<DecisionRecord[]> {
+    return this.decisions
+      .filter((decision) => decision.request.context.tenantId === options.tenantId)
+      .slice(-(options.limit ?? 100))
+      .reverse();
   }
 }

@@ -2,14 +2,16 @@ import type { AddressInfo } from "net";
 import type { IncomingMessage, ServerResponse } from "http";
 import { createServer as createHttpServer } from "http";
 import { createGovernor, type Governor, type GovernorConfig } from "@governor/core";
-import { handleAuthorize } from "./handlers";
-import { AUTHORIZE_ROUTE, HEALTH_ROUTE } from "./routes";
+import type { GovernorStorage } from "@governor/storage";
+import { handleAuthorize, handleDecisionList } from "./handlers";
+import { AUTHORIZE_ROUTE, DECISIONS_ROUTE, HEALTH_ROUTE } from "./routes";
 
 export interface GovernorServerOptions {
   port?: number;
   hostname?: string;
   governor?: Governor;
   config?: GovernorConfig;
+  storage?: GovernorStorage;
 }
 
 export interface GovernorHttpResponse {
@@ -58,7 +60,17 @@ export const createGovernorHttpServer = (options: GovernorServerOptions = {}) =>
 
       if (request.method === "POST" && request.url === AUTHORIZE_ROUTE) {
         const payload = await readJsonBody(request);
-        writeJson(response, await handleAuthorize(governor, payload));
+        writeJson(response, await handleAuthorize(governor, payload, options.storage));
+        return;
+      }
+
+      if (request.method === "GET" && request.url?.startsWith(DECISIONS_ROUTE)) {
+        const url = new URL(request.url, "http://governor.local");
+        const tenantId = url.searchParams.get("tenantId") ?? "default";
+        const limit = url.searchParams.get("limit")
+          ? Number(url.searchParams.get("limit"))
+          : undefined;
+        writeJson(response, await handleDecisionList(options.storage, tenantId, limit));
         return;
       }
 
